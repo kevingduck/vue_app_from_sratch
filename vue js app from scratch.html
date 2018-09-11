@@ -1,0 +1,99 @@
+
+<script src="https://unpkg.com/vue"></script>
+
+<div id="app">
+  <h1>Vue App</h1>
+  <p>
+    <input v-model="message" placeholder="enter message ...">
+  </p>
+  <p>Message: {{ message }}</p>
+  <p>Reversed: {{ reversedMessage }}</p>
+
+  <span>Click to see reversed: <button @click="reverseMessage()">Click me</button></span>
+  <h2>Yes/No Machine</h2>
+  <span>Ask a yes/ no question: </span>
+  <div id="watch-example">
+    <p>
+      <input v-model="question">
+    </p>
+    <p>{{ answer }}</p>
+
+  </div>
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      message: "hey enter some stuff ...",
+      question: '',
+      answer: 'I can answer after you ask a question',
+    },
+    watch: {
+      question: function (newQuestion, oldQuestion) {
+        this.answer = "Waiting for you to finish typing ..."
+        this.debouncedGetAnswer()
+      }
+    },
+    methods: {
+      reverseMessage: function () {
+        message = this.message.split('').reverse().join('')
+        alert(message)
+        return message
+      },
+      getAnswer: function () {
+        if (this.question.indexOf("?")=== -1) {
+          this.answer = "Questions need question marks!"
+          return
+        }
+        this.answer = "Thinking ..."
+        var vm = this
+        axios.get('https://yesno.wtf/api')
+          .then(function (response) {
+            vm.answer = _.capitalize(response.data.answer)
+        })
+        .catch(function(error) {
+          vm.answer = "Error, couldn't reach API :( ... | " + error
+        })
+      }
+    },
+    created: function () {
+      // `this` points to the vm instance
+      this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
+      console.log('message is: ' + this.message)
+    },
+    computed: {
+      // a computed getter
+      reversedMessage: function () {
+        // `this` points to the vm instance
+        return this.message.split('').reverse().join('')
+      }
+    }
+  })
+</script>
+
+<style>
+  body {
+    background-color: #D4B210;
+    margin: 100px;
+  }
+  input {
+    font-size: 16px;
+    width: 100%;
+    height:40px;
+    border-radius: 5px;
+  }
+  #app {
+    color: rgba(244,247,254,0.9);
+    font-family: "Tahoma";
+  }
+  h1, h2 {
+    text-align: center;
+    background-color: rgba(255,255,255,0.2);
+  }
+</style>
